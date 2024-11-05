@@ -4,29 +4,29 @@ import "sync"
 
 type Storage struct {
 	data map[string]string
-	mu   sync.RWMutex // Mutex для синхронизации доступа к данным
+	mu   sync.RWMutex
 }
 
 var storage *Storage
 
-// New создаёт и возвращает новое хранилище
+// New creates and return new storage.
 func New() *Storage {
 	return &Storage{
 		data: make(map[string]string),
 	}
 }
 
-// Init инициализирует глобальное хранилище
+// Init initialize global storage
 func Init() {
 	storage = New()
 }
 
-// GetInstance возвращает ссылку на глобальное хранилище
+// GetInstance returns pointer to local storage
 func GetInstance() *Storage {
 	return storage
 }
 
-// Get получает значение по ключу
+// Get gets value by key
 func (s *Storage) Get(key string) (string, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -34,7 +34,7 @@ func (s *Storage) Get(key string) (string, bool) {
 	return value, ok
 }
 
-// Set устанавливает значение по ключу
+// Set sets key by value
 func (s *Storage) Set(key string, value string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

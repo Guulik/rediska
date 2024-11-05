@@ -2,8 +2,8 @@ package Commands
 
 import (
 	"fmt"
-	"github.com/codecrafters-io/redis-starter-go/app/RESP"
 	"net"
+	"rediska/internal/RESP"
 )
 
 func ECHO(conn net.Conn, phrase string) {

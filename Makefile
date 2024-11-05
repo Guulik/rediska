@@ -1,6 +1,5 @@
-.PHONY: commit
+.PHONY: lint
 
-commit:
-	git add .
-	git commit -m "new try"
-	git push origin master
+lint:
+	golangci-lint run -c .golangci.yml
+

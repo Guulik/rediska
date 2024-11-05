@@ -2,9 +2,9 @@ package Commands
 
 import (
 	"fmt"
-	"github.com/codecrafters-io/redis-starter-go/app/RESP"
-	"github.com/codecrafters-io/redis-starter-go/app/Storage"
 	"net"
+	"rediska/internal/RESP"
+	"rediska/internal/Storage"
 )
 
 func GET(conn net.Conn, key string) {

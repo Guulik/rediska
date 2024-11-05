@@ -1,9 +1,9 @@
 package Commands
 
 import (
-	"github.com/codecrafters-io/redis-starter-go/app/Storage"
-	"github.com/codecrafters-io/redis-starter-go/app/api"
 	"net"
+	"rediska/internal/Storage"
+	"rediska/internal/api"
 	"time"
 )
 
