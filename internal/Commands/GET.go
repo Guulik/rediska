@@ -3,8 +3,8 @@ package Commands
 import (
 	"fmt"
 	"net"
-	"rediska/internal/RESP"
 	"rediska/internal/Storage"
+	"rediska/internal/util/RESP"
 )
 
 func GET(conn net.Conn, key string) {

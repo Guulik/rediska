@@ -3,7 +3,7 @@ package Commands
 import (
 	"fmt"
 	"net"
-	"rediska/internal/RESP"
+	"rediska/internal/util/RESP"
 )
 
 func ECHO(conn net.Conn, phrase string) {

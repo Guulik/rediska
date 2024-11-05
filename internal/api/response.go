@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"rediska/internal/RESP"
+	"rediska/internal/util/RESP"
 
 	"net"
 )
