@@ -2,18 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
-	"os"
+	"rediska/config"
 	"rediska/internal/Storage"
 	"rediska/internal/api"
 )
 
 func main() {
+	cfg := config.MustLoad()
 
-	l, err := net.Listen("tcp", "0.0.0.0:6379")
+	address := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
+	l, err := net.Listen("tcp", address)
 	if err != nil {
-		fmt.Println("Failed to bind to port 6379")
-		os.Exit(1)
+		log.Fatal("Failed to bind to port 6379")
 	}
 
 	Storage.Init()
