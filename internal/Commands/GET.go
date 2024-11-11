@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 	"rediska/internal/Storage"
-	"rediska/internal/util/RESP"
+	"rediska/internal/util/resper"
 )
 
 func GET(conn net.Conn, key string) {
@@ -13,7 +13,7 @@ func GET(conn net.Conn, key string) {
 	storage := Storage.GetInstance()
 	if value, exists := storage.Get(key); exists {
 
-		buf, err := RESP.EncodeBulkString(value)
+		buf, err := resper.EncodeBulkString(value)
 		if err != nil {
 			fmt.Println("op:", op, "failed to encode: ", err)
 		}

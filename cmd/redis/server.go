@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 	"rediska/config"
-	"rediska/internal/app"
+	"rediska/internal/app/server"
 	"rediska/internal/lib/logger/handlers/slogpretty"
 )
 
@@ -13,9 +13,9 @@ func main() {
 
 	log := setupLogger("local")
 
-	a := app.New(log, cfg)
+	redisServer := server.New(log, cfg)
 
-	a.RedisServer.MustRun()
+	redisServer.MustRun()
 }
 
 func setupLogger(env string) *slog.Logger {

@@ -2,13 +2,13 @@ package api
 
 import (
 	"fmt"
-	"rediska/internal/util/RESP"
+	"rediska/internal/util/resper"
 
 	"net"
 )
 
 func PONG(conn net.Conn) {
-	buf, err := RESP.EncodeSimpleString("PONG")
+	buf, err := resper.EncodeSimpleString("PONG")
 	if err != nil {
 		fmt.Println("failed to encode:", err)
 	}
@@ -22,7 +22,7 @@ func PONG(conn net.Conn) {
 func OK(conn net.Conn) {
 	op := "OK response"
 
-	buf, err := RESP.EncodeSimpleString("OK")
+	buf, err := resper.EncodeSimpleString("OK")
 	if err != nil {
 		fmt.Println("op:", op, "failed to encode: ", err)
 	}

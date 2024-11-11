@@ -1,4 +1,4 @@
-package RESP
+package resper
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ func EncodeSimpleString(s string) (bytes.Buffer, error) {
 	err := wr.WriteSimpleString(s)
 
 	if err != nil {
-		fmt.Println("failed to encode string with RESP")
+		fmt.Println("failed to encode string with resper")
 		return bytes.Buffer{}, err
 	}
 
@@ -32,7 +32,7 @@ func EncodeBulkString(s string) (bytes.Buffer, error) {
 	}
 
 	if err != nil {
-		fmt.Println("failed to encode string with RESP")
+		fmt.Println("failed to encode string with resper")
 		return bytes.Buffer{}, err
 	}
 

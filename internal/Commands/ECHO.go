@@ -3,11 +3,11 @@ package Commands
 import (
 	"fmt"
 	"net"
-	"rediska/internal/util/RESP"
+	"rediska/internal/util/resper"
 )
 
 func ECHO(conn net.Conn, phrase string) {
-	buf, err := RESP.EncodeSimpleString(phrase)
+	buf, err := resper.EncodeSimpleString(phrase)
 	if err != nil {
 		fmt.Println("failed to encode:", err)
 	}
