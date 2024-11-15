@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
 	"rediska/config"
 	"rediska/internal/app/server"
 	"rediska/internal/lib/logger/handlers/slogpretty"
+	"syscall"
 )
 
 func main() {
@@ -15,7 +18,12 @@ func main() {
 
 	redisServer := server.New(log, cfg)
 
-	redisServer.MustRun()
+	go redisServer.MustRun()
+	log.Info("Redis is Started :)", slog.String("address", fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)))
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	<-stop
 }
 
 func setupLogger(env string) *slog.Logger {

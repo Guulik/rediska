@@ -17,6 +17,7 @@ func main() {
 
 	cli.InitCobra(address)
 
+	fmt.Println("Hello! Its redis cli :>")
 	go interactiveMode()
 
 	stop := make(chan os.Signal)
@@ -40,6 +41,8 @@ func interactiveMode() {
 		if len(args) == 0 {
 			continue
 		}
+		fmt.Println("!!DEBUG!! args: ", args)
+		strings.ToUpper(args[0])
 
 		cmd, _, err := cli.RootCmd.Find(args)
 		if err != nil {
