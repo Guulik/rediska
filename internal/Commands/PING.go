@@ -2,9 +2,9 @@ package Commands
 
 import (
 	"net"
-	"rediska/internal/api"
+	"rediska/internal/domain/response"
 )
 
 func PING(conn net.Conn) {
-	api.PONG(conn)
+	response.PONG(conn)
 }

@@ -3,7 +3,7 @@ package Commands
 import (
 	"net"
 	"rediska/internal/Storage"
-	"rediska/internal/api"
+	"rediska/internal/domain/response"
 	"time"
 )
 
@@ -35,5 +35,5 @@ func SET(conn net.Conn, key string, value string, opts ...OptionFunc) {
 	storage := Storage.GetInstance()
 	storage.Set(args.key, args.value)
 
-	api.OK(conn)
+	response.OK(conn)
 }
