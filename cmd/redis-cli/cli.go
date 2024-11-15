@@ -23,6 +23,7 @@ func main() {
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
+
 }
 
 func interactiveMode() {
@@ -34,11 +35,12 @@ func interactiveMode() {
 		input := scanner.Text()
 
 		if input == "exit" {
-			break
+			os.Exit(0)
 		}
 
 		args := strings.Fields(input)
 		if len(args) == 0 {
+			fmt.Println("empty command")
 			continue
 		}
 		fmt.Println("!!DEBUG!! args: ", args)

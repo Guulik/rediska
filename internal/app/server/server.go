@@ -12,8 +12,8 @@ import (
 
 type Server struct {
 	log *slog.Logger
-
 	cfg *config.Config
+	api *api.API
 }
 
 func New(
@@ -23,11 +23,11 @@ func New(
 
 	_ = context.Background()
 
-	//TODO: init api layer
+	API := api.New(log)
 	//TODO: init service layer
 	//TODO: init repo layer
 
-	srv := &Server{log: log, cfg: cfg}
+	srv := &Server{log: log, cfg: cfg, api: API}
 
 	return srv
 }
@@ -48,12 +48,12 @@ func (s *Server) run() error {
 	Storage.Init()
 
 	for {
-		con, err := l.Accept()
+		conn, err := l.Accept()
 		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
 			continue
 		}
-		go api.ReadInput(con)
+		s.api.HandleInput(conn)
 	}
 }
 

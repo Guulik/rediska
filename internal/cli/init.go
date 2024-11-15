@@ -24,7 +24,6 @@ func New(
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to connect to server: %w", err))
 	}
-	defer conn.Close()
 
 	return &CliClient{conn: conn}
 }
