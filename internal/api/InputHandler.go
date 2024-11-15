@@ -5,22 +5,38 @@ import (
 	"fmt"
 	"github.com/tidwall/resp"
 	"io"
-	"log"
+	"log/slog"
 	"net"
+	"os"
 	"rediska/internal/Commands"
 	"strings"
 	"time"
 )
 
-func Execute(conn *net.Conn, command string, args []resp.Value) {
+type API struct {
+	log  *slog.Logger
+	conn net.Conn
+}
+
+func New(
+	log *slog.Logger,
+) *API {
+	return &API{log: log}
+}
+
+func (a *API) setConn(conn net.Conn) {
+	a.conn = conn
+}
+
+func (a *API) execute(command string, args []resp.Value) {
 	switch command {
 	case "PING":
 		fmt.Println("ponging...")
-		Commands.PING(*conn)
+		Commands.PING(a.conn)
 	case "ECHO":
 		fmt.Println("echoing...")
 		phrase := args[1].String()
-		Commands.ECHO(*conn, phrase)
+		Commands.ECHO(a.conn, phrase)
 	case "SET":
 		fmt.Println("setting...")
 		key := args[1].String()
@@ -37,46 +53,72 @@ func Execute(conn *net.Conn, command string, args []resp.Value) {
 			if err != nil {
 				fmt.Println("failed to parse duration")
 			}
-			Commands.SET(*conn, key, value, Commands.WithTTL(ttl))
+			Commands.SET(a.conn, key, value, Commands.WithTTL(ttl))
 			break
 		}
-		Commands.SET(*conn, key, value)
+		Commands.SET(a.conn, key, value)
 	case "GET":
 		fmt.Println("getting...")
 		key := args[1].String()
-		Commands.GET(*conn, key)
+		Commands.GET(a.conn, key)
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 	}
 }
 
-func ReadInput(conn net.Conn) {
-	buf := make([]byte, 128)
-	defer conn.Close()
-	//why infinite FOR loop????
+func (a *API) HandleInput(conn net.Conn) {
+	const op = "api.HandleInput"
+	log := a.log.With(slog.String("op", op))
+
+	a.setConn(conn)
 	for {
-		n, err := conn.Read(buf)
-		if n == 0 {
-			fmt.Println("No data to read.")
-			break
-		}
+		v, err := a.readInput(a.conn)
+		log.Debug("resp value and err", v, err)
+
 		if err != nil {
-			fmt.Println("failed to read bytes")
-		}
-		rd := resp.NewReader(bytes.NewReader(buf[:n]))
-		v, _, err := rd.ReadValue()
-		fmt.Println("recieved bytes: ", buf, "readerValue: ", v)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
+			log.Error("FATAL Err = ", err)
+			a.conn.Close()
+			os.Exit(1)
 		}
 
 		command := v.Array()[0].String()
 		fmt.Println("command: ", command)
 
 		args := v.Array()[1:]
-		Execute(&conn, command, args)
+		a.execute(command, args)
 	}
+}
+
+func (a *API) readInput(conn net.Conn) (resp.Value, error) {
+	const op = "api.readInput"
+	log := a.log.With(slog.String("op", op))
+
+	buf := make([]byte, 128)
+	n, err := conn.Read(buf)
+	if err != nil {
+		if err == io.EOF {
+			log.Warn("connection closed by client")
+			return resp.NullValue(), err
+		}
+		log.Error("failed to read bytes", err)
+		return resp.NullValue(), fmt.Errorf("failed to read bytes: %w", err)
+	}
+	if n == 0 {
+		log.Warn("no data received")
+		return resp.NullValue(), fmt.Errorf("no data to read")
+	}
+
+	var v resp.Value
+	rd := resp.NewReader(bytes.NewReader(buf[:n]))
+	v, _, err = rd.ReadValue()
+	if err != nil {
+		log.Error("failed to parse RESP value", err)
+		return resp.NullValue(), fmt.Errorf("failed to parse RESP value: %w", err)
+	}
+
+	log.Debug("buffer and RESP value debug",
+		slog.Any("recieved bytes:", buf[:n]),
+		slog.Any("readerValue: ", v))
+
+	return v, nil
 }
