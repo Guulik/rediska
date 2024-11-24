@@ -72,8 +72,10 @@ func (a *API) HandleInput(conn net.Conn) {
 
 	a.setConn(conn)
 	for {
-		v, err := a.readInput(a.conn)
-		log.Debug("resp value and err", v, err)
+		v, err := a.readInput()
+		log.Debug("resp value and err",
+			slog.Any("value", v),
+			slog.Any("error", err))
 
 		if err != nil {
 			log.Error("FATAL Err = ", err)
@@ -89,12 +91,12 @@ func (a *API) HandleInput(conn net.Conn) {
 	}
 }
 
-func (a *API) readInput(conn net.Conn) (resp.Value, error) {
+func (a *API) readInput() (resp.Value, error) {
 	const op = "api.readInput"
 	log := a.log.With(slog.String("op", op))
 
 	buf := make([]byte, 128)
-	n, err := conn.Read(buf)
+	n, err := a.conn.Read(buf)
 	if err != nil {
 		if err == io.EOF {
 			log.Warn("connection closed by client")
