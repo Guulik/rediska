@@ -124,3 +124,24 @@ func (a *API) readInput() (resp.Value, error) {
 
 	return v, nil
 }
+
+func (a *API) convertRespValuesToAnyArray(values []resp.Value) ([]any, error) {
+	var result []any
+	for _, v := range values {
+		switch v.Type() {
+		case resp.BulkString:
+			result = append(result, v.String())
+		case resp.SimpleString:
+			result = append(result, v.String())
+		case resp.Integer:
+			result = append(result, v.Integer())
+		case resp.Error:
+			result = append(result, v.Error())
+		case resp.Array:
+			result = append(result, v.Array())
+		default:
+			return nil, fmt.Errorf("failed to convert Resp to Array: unsupported RESP type: %v", v.Type())
+		}
+	}
+	return result, nil
+}
