@@ -28,21 +28,21 @@ func (a *API) setConn(conn net.Conn) {
 	a.conn = conn
 }
 
-func (a *API) execute(command string, args []resp.Value) {
+func (a *API) execute(command string, args []any) {
 	switch command {
 	case "PING":
 		fmt.Println("ponging...")
 		Commands.PING(a.conn)
 	case "ECHO":
 		fmt.Println("echoing...")
-		phrase := args[1].String()
+		phrase := args[0].(string)
 		Commands.ECHO(a.conn, phrase)
 	case "SET":
 		fmt.Println("setting...")
-		key := args[1].String()
-		value := args[2].String()
-		ttlType := args[3].String()
-		expire := args[4].String()
+		key := args[0].(string)
+		value := args[1].(string)
+		ttlType := args[2].(string)
+		expire := args[3].(string)
 
 		var (
 			ttl time.Duration
@@ -59,7 +59,7 @@ func (a *API) execute(command string, args []resp.Value) {
 		Commands.SET(a.conn, key, value)
 	case "GET":
 		fmt.Println("getting...")
-		key := args[1].String()
+		key := args[0].(string)
 		Commands.GET(a.conn, key)
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
@@ -86,7 +86,7 @@ func (a *API) HandleInput(conn net.Conn) {
 		command := v.Array()[0].String()
 		fmt.Println("command: ", command)
 
-		args := v.Array()[1:]
+		args := a.convertRespValuesToAnyArray(v.Array()[1:])
 		a.execute(command, args)
 	}
 }
