@@ -119,8 +119,8 @@ func (a *API) readInput() (resp.Value, error) {
 	}
 
 	log.Debug("buffer and RESP value debug",
-		slog.Any("recieved bytes:", buf[:n]),
-		slog.Any("readerValue: ", v))
+		slog.Any("received bytes:", buf[:n]),
+		slog.Any("readerValue: ", v.String()))
 
 	return v, nil
 }
