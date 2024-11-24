@@ -74,7 +74,7 @@ func (a *API) HandleInput(conn net.Conn) {
 	for {
 		v, err := a.readInput()
 		log.Debug("resp value and err",
-			slog.Any("value", v),
+			slog.Any("value", a.convertRespValuesToAnyArray(v.Array())),
 			slog.Any("error", err))
 
 		if err != nil {
@@ -120,12 +120,12 @@ func (a *API) readInput() (resp.Value, error) {
 
 	log.Debug("buffer and RESP value debug",
 		slog.Any("received bytes:", buf[:n]),
-		slog.Any("readerValue: ", v.String()))
+		slog.Any("readerValue: ", a.convertRespValuesToAnyArray(v.Array())))
 
 	return v, nil
 }
 
-func (a *API) convertRespValuesToAnyArray(values []resp.Value) ([]any, error) {
+func (a *API) convertRespValuesToAnyArray(values []resp.Value) []any {
 	var result []any
 	for _, v := range values {
 		switch v.Type() {
@@ -140,8 +140,8 @@ func (a *API) convertRespValuesToAnyArray(values []resp.Value) ([]any, error) {
 		case resp.Array:
 			result = append(result, v.Array())
 		default:
-			return nil, fmt.Errorf("failed to convert Resp to Array: unsupported RESP type: %v", v.Type())
+			result = append(result, nil)
 		}
 	}
-	return result, nil
+	return result
 }

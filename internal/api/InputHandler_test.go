@@ -60,8 +60,7 @@ func TestAPI_readInput(t *testing.T) {
 			message := strings.Trim(value.String(), "[]")
 			command := value.Array()[0].String()
 			respArgs := value.Array()[1:]
-			args, convertErr := a.convertRespValuesToAnyArray(respArgs)
-			require.NoError(t, convertErr)
+			args := a.convertRespValuesToAnyArray(respArgs)
 
 			require.Equal(t, tt.wantReceivedMessage, message)
 			require.Equal(t, tt.wantCommand, command)

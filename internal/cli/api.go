@@ -16,7 +16,8 @@ func (c *CliClient) sendCommand(command string, args ...string) error {
 		stringRequest += val.String()
 	}
 
-	req, err := resp.StringValue(stringRequest).MarshalRESP()
+	req, err := resp.ArrayValue(values).MarshalRESP()
+	//req, err := resp.StringValue(stringRequest).MarshalRESP()
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to Marshal RESP request: "), err)
 		return err
@@ -27,6 +28,7 @@ func (c *CliClient) sendCommand(command string, args ...string) error {
 		fmt.Println(fmt.Errorf("failed to send data to server: "), err)
 		return err
 	}
-
+	//TODO: Delete me
+	fmt.Println("sent: ", resp.ArrayValue(values))
 	return nil
 }
