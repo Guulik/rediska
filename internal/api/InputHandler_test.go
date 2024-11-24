@@ -2,7 +2,6 @@ package api
 
 import (
 	"github.com/stretchr/testify/require"
-	"github.com/tidwall/resp"
 	"net"
 	"rediska/internal/lib/logger"
 	"strings"
@@ -15,21 +14,28 @@ func TestAPI_readInput(t *testing.T) {
 		message             string
 		wantReceivedMessage string
 		wantCommand         string
-		wantArgs            interface{}
+		wantArgs            []any
 	}{
 		{
 			name:                "ping",
 			message:             "*1\r\n$4\r\nPING\r\n",
 			wantReceivedMessage: "PING",
 			wantCommand:         "PING",
-			wantArgs:            []resp.Value{},
+			wantArgs:            nil,
 		},
 		{
 			name:                "set",
 			message:             "*3\r\n$3\r\nSET\r\n$3\r\ncar\r\n$3\r\n911\r\n",
 			wantReceivedMessage: "SET car 911",
 			wantCommand:         "SET",
-			wantArgs:            []any{"car", 911},
+			wantArgs:            []any{"car", "911"},
+		},
+		{
+			name:                "get",
+			message:             "*2\r\n$3\r\nGET\r\n$3\r\ncar\r\n",
+			wantReceivedMessage: "GET car",
+			wantCommand:         "GET",
+			wantArgs:            []any{"car"},
 		},
 	}
 	for _, tt := range tests {
@@ -53,7 +59,9 @@ func TestAPI_readInput(t *testing.T) {
 
 			message := strings.Trim(value.String(), "[]")
 			command := value.Array()[0].String()
-			args := value.Array()[1:]
+			respArgs := value.Array()[1:]
+			args, convertErr := a.convertRespValuesToAnyArray(respArgs)
+			require.NoError(t, convertErr)
 
 			require.Equal(t, tt.wantReceivedMessage, message)
 			require.Equal(t, tt.wantCommand, command)
