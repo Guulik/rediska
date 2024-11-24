@@ -72,8 +72,10 @@ func (a *API) HandleInput(conn net.Conn) {
 
 	a.setConn(conn)
 	for {
-		v, err := a.readInput(a.conn)
-		log.Debug("resp value and err", v, err)
+		v, err := a.readInput()
+		log.Debug("resp value and err",
+			slog.Any("value", a.convertRespValuesToAnyArray(v.Array())),
+			slog.Any("error", err))
 
 		if err != nil {
 			log.Error("FATAL Err = ", err)
@@ -89,12 +91,12 @@ func (a *API) HandleInput(conn net.Conn) {
 	}
 }
 
-func (a *API) readInput(conn net.Conn) (resp.Value, error) {
+func (a *API) readInput() (resp.Value, error) {
 	const op = "api.readInput"
 	log := a.log.With(slog.String("op", op))
 
 	buf := make([]byte, 128)
-	n, err := conn.Read(buf)
+	n, err := a.conn.Read(buf)
 	if err != nil {
 		if err == io.EOF {
 			log.Warn("connection closed by client")
@@ -117,8 +119,29 @@ func (a *API) readInput(conn net.Conn) (resp.Value, error) {
 	}
 
 	log.Debug("buffer and RESP value debug",
-		slog.Any("recieved bytes:", buf[:n]),
-		slog.Any("readerValue: ", v))
+		slog.Any("received bytes:", buf[:n]),
+		slog.Any("readerValue: ", a.convertRespValuesToAnyArray(v.Array())))
 
 	return v, nil
+}
+
+func (a *API) convertRespValuesToAnyArray(values []resp.Value) []any {
+	var result []any
+	for _, v := range values {
+		switch v.Type() {
+		case resp.BulkString:
+			result = append(result, v.String())
+		case resp.SimpleString:
+			result = append(result, v.String())
+		case resp.Integer:
+			result = append(result, v.Integer())
+		case resp.Error:
+			result = append(result, v.Error())
+		case resp.Array:
+			result = append(result, v.Array())
+		default:
+			result = append(result, nil)
+		}
+	}
+	return result
 }
