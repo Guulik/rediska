@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-type OptionFunc func(*SetArgs)
+type SetOptionFunc func(*SetArgs)
 
-func WithTTL(ttl time.Duration) OptionFunc {
+func WithTTL(ttl time.Duration) SetOptionFunc {
 	return func(s *SetArgs) {
 		s.ttl = ttl
 	}
@@ -22,7 +22,7 @@ type SetArgs struct {
 	ttl   time.Duration
 }
 
-func SET(conn net.Conn, key string, value string, opts ...OptionFunc) {
+func SET(conn net.Conn, key string, value string, opts ...SetOptionFunc) {
 	args := &SetArgs{
 		key:   key,
 		value: value,
