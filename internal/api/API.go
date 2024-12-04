@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"rediska/internal/domain/response"
 )
 
 type API struct {
@@ -51,7 +52,10 @@ func (a *API) HandleInput(conn net.Conn) {
 			fmt.Printf("Unknown command: %s\n", command)
 			return
 		}
-		handler(a.conn, args)
+		err = handler(args)
+		if err != nil {
+			response.Error(a.conn, err)
+		}
 	}
 }
 

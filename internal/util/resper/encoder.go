@@ -38,3 +38,16 @@ func EncodeBulkString(s string) (bytes.Buffer, error) {
 
 	return buf, nil
 }
+
+func EncodeSimpleError(error error) (bytes.Buffer, error) {
+	var buf bytes.Buffer
+	wr := resp.NewWriter(&buf)
+
+	err := wr.WriteError(error)
+	if err != nil {
+		fmt.Println("failed to encode error with resper")
+		return bytes.Buffer{}, err
+	}
+
+	return buf, nil
+}

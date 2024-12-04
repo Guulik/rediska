@@ -1,10 +1,6 @@
 package api
 
-import (
-	"net"
-)
-
-type HandlerFunc func(conn net.Conn, args []any)
+type HandlerFunc func(args []any) error
 
 type MiddlewareFunc func(next HandlerFunc) HandlerFunc
 
