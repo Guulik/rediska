@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"rediska/config"
 	"rediska/internal/app/server"
-	"rediska/internal/lib/logger/handlers/slogpretty"
+	"rediska/internal/lib/logger"
 	"syscall"
 )
 
@@ -31,7 +31,7 @@ func setupLogger(env string) *slog.Logger {
 
 	switch env {
 	case "local":
-		log = setupPrettySlog()
+		log = logger.SetupPrettySlog()
 	case "prod":
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
@@ -39,16 +39,4 @@ func setupLogger(env string) *slog.Logger {
 	}
 
 	return log
-}
-
-func setupPrettySlog() *slog.Logger {
-	opts := slogpretty.PrettyHandlerOptions{
-		SlogOpts: &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		},
-	}
-
-	handler := opts.NewPrettyHandler(os.Stdout)
-
-	return slog.New(handler)
 }

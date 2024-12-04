@@ -1,10 +1,19 @@
 package Commands
 
 import (
+	"fmt"
 	"net"
-	"rediska/internal/domain/response"
+	"rediska/internal/util/resper"
 )
 
 func PING(conn net.Conn) {
-	response.PONG(conn)
+	buf, err := resper.EncodeSimpleString("PONG")
+	if err != nil {
+		fmt.Println("failed to encode:", err)
+	}
+
+	_, err = conn.Write(buf.Bytes())
+	if err != nil {
+		fmt.Println("failed to write PONG to client")
+	}
 }
