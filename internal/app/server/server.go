@@ -21,9 +21,12 @@ func New(
 	cfg *config.Config,
 ) *Server {
 
+	//TODO: use context
 	_ = context.Background()
 
 	API := api.New(log)
+	API.RegisterCommands()
+
 	//TODO: init service layer
 	//TODO: init repo layer
 

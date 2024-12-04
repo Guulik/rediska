@@ -7,63 +7,22 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"os"
-	"rediska/internal/Commands"
-	"strings"
-	"time"
 )
 
 type API struct {
-	log  *slog.Logger
-	conn net.Conn
+	log    *slog.Logger
+	conn   net.Conn
+	router *Router
 }
 
 func New(
 	log *slog.Logger,
 ) *API {
-	return &API{log: log}
+	return &API{log: log, router: NewRouter()}
 }
 
 func (a *API) setConn(conn net.Conn) {
 	a.conn = conn
-}
-
-func (a *API) execute(command string, args []any) {
-	switch command {
-	case "PING":
-		fmt.Println("ponging...")
-		Commands.PING(a.conn)
-	case "ECHO":
-		fmt.Println("echoing...")
-		phrase := args[0].(string)
-		Commands.ECHO(a.conn, phrase)
-	case "SET":
-		fmt.Println("setting...")
-		key := args[0].(string)
-		value := args[1].(string)
-		ttlType := args[2].(string)
-		expire := args[3].(string)
-
-		var (
-			ttl time.Duration
-			err error
-		)
-		if strings.EqualFold(ttlType, "px") {
-			ttl, err = time.ParseDuration(expire + "ms")
-			if err != nil {
-				fmt.Println("failed to parse duration")
-			}
-			Commands.SET(a.conn, key, value, Commands.WithTTL(ttl))
-			break
-		}
-		Commands.SET(a.conn, key, value)
-	case "GET":
-		fmt.Println("getting...")
-		key := args[0].(string)
-		Commands.GET(a.conn, key)
-	default:
-		fmt.Printf("Unknown command: %s\n", command)
-	}
 }
 
 func (a *API) HandleInput(conn net.Conn) {
@@ -80,14 +39,19 @@ func (a *API) HandleInput(conn net.Conn) {
 		if err != nil {
 			log.Error("FATAL Err = ", err)
 			a.conn.Close()
-			os.Exit(1)
+			return
 		}
 
 		command := v.Array()[0].String()
 		fmt.Println("command: ", command)
-
 		args := a.convertRespValuesToAnyArray(v.Array()[1:])
-		a.execute(command, args)
+
+		handler, ok := a.router.routes[command]
+		if !ok {
+			fmt.Printf("Unknown command: %s\n", command)
+			return
+		}
+		handler(a.conn, args)
 	}
 }
 
