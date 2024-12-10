@@ -20,7 +20,7 @@ func main() {
 	fmt.Println("Hello! Its redis cli :>")
 	go interactiveMode()
 
-	stop := make(chan os.Signal)
+	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
 

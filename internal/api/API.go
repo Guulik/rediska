@@ -68,7 +68,7 @@ func (a *API) readInput() (resp.Value, error) {
 	if err != nil {
 		if err == io.EOF {
 			log.Warn("connection closed by client")
-			return resp.NullValue(), err
+			return resp.NullValue(), fmt.Errorf("connection closed by client: %w", err)
 		}
 		log.Error("failed to read bytes", err)
 		return resp.NullValue(), fmt.Errorf("failed to read bytes: %w", err)
