@@ -10,7 +10,7 @@ func (s *CommandsService) ECHO(phrase string) (bytes.Buffer, error) {
 
 	buf, err := resper.EncodeBulkString(phrase)
 	if err != nil {
-		log.Error("failed to encode:", err)
+		log.Error("failed to encode:", err.Error())
 		return bytes.Buffer{}, err
 	}
 	return buf, nil

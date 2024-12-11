@@ -39,7 +39,7 @@ func (a *API) SET(args []any) {
 	if strings.EqualFold(ttlType, "px") {
 		ttl, err = time.ParseDuration(expire + "ms")
 		if err != nil {
-			log.Error("failed to parse duration", err)
+			log.Error("failed to parse duration", err.Error())
 			a.sendResponse(bytes.Buffer{}, err)
 			return
 		}

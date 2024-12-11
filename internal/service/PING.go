@@ -10,7 +10,7 @@ func (s *CommandsService) PING() (bytes.Buffer, error) {
 
 	buf, err := resper.EncodeSimpleString("PONG")
 	if err != nil {
-		log.Error("failed to encode:", err)
+		log.Error("failed to encode:", err.Error())
 		return bytes.Buffer{}, err
 	}
 
