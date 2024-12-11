@@ -17,6 +17,7 @@ type API struct {
 	valuesProvider  ValuesProvider
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.50.0 --name=Checker
 type Checker interface {
 	PING() (bytes.Buffer, error)
 	ECHO(string) (bytes.Buffer, error)

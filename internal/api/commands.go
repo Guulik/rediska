@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"rediska/internal/domain/response"
+	"rediska/internal/lib/logger/sl"
 	"rediska/internal/service"
 	"strings"
 	"time"
@@ -39,7 +40,7 @@ func (a *API) SET(args []any) {
 	if strings.EqualFold(ttlType, "px") {
 		ttl, err = time.ParseDuration(expire + "ms")
 		if err != nil {
-			log.Error("failed to parse duration", err)
+			log.Error("failed to parse duration", sl.Err(err))
 			a.sendResponse(bytes.Buffer{}, err)
 			return
 		}

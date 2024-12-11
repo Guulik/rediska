@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"rediska/internal/Storage"
+	"rediska/internal/lib/logger/sl"
 	"rediska/internal/util/resper"
 	"time"
 )
@@ -40,7 +41,7 @@ func (s *CommandsService) SET(key string, value string, opts ...SetOptionFunc) (
 
 	buf, err := resper.EncodeSimpleString("OK")
 	if err != nil {
-		log.Error("failed to encode: ", err)
+		log.Error("failed to encode: ", sl.Err(err))
 		return bytes.Buffer{}, err
 	}
 	return buf, nil
