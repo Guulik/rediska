@@ -40,7 +40,7 @@ func (s *CommandsService) SET(key string, value string, opts ...SetOptionFunc) (
 
 	buf, err := resper.EncodeSimpleString("OK")
 	if err != nil {
-		log.Error("failed to encode: ", err)
+		log.Error("failed to encode: ", err.Error())
 		return bytes.Buffer{}, err
 	}
 	return buf, nil
