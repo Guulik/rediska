@@ -9,7 +9,7 @@ import (
 )
 
 func (a *API) PING(args []any) {
-	log := a.log.With("op", "API.go.PING")
+	log := a.log.With("op", "api.PING")
 	log.Debug("ponging...")
 	buf, err := a.checker.PING()
 	a.sendResponse(buf, err)
@@ -23,7 +23,7 @@ func (a *API) ECHO(args []any) {
 	a.sendResponse(buf, err)
 }
 func (a *API) SET(args []any) {
-	log := a.log.With("op", "API.go.SET")
+	log := a.log.With("op", "api.SET")
 
 	log.Debug("setting...")
 	key := args[0].(string)
@@ -53,7 +53,7 @@ func (a *API) SET(args []any) {
 }
 
 func (a *API) GET(args []any) {
-	log := a.log.With("op", "API.go.GET")
+	log := a.log.With("op", "api.GET")
 	log.Debug("getting...")
 
 	key := args[0].(string)
@@ -62,7 +62,7 @@ func (a *API) GET(args []any) {
 }
 
 func (a *API) sendResponse(buf bytes.Buffer, err error) {
-	log := a.log.With("op", "sendResponse")
+	log := a.log.With("op", "api.sendResponse")
 
 	if err != nil {
 		log.Debug("sending Error")
