@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/require"
 	"io"
-	api_mocks "rediska/internal/api/mocks"
+	api_mocks "rediska/internal/service/mocks"
 	"rediska/internal/util/resper"
 	"testing"
 )
