@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net"
 	"rediska/internal/lib/logger"
+	"rediska/internal/util/resper"
 	"strings"
 	"testing"
 )
@@ -60,7 +61,7 @@ func TestAPI_readInput(t *testing.T) {
 			message := strings.Trim(value.String(), "[]")
 			command := value.Array()[0].String()
 			respArgs := value.Array()[1:]
-			args := a.convertRespValuesToAnyArray(respArgs)
+			args := resper.RespValuesToAny(respArgs)
 
 			require.Equal(t, tt.wantReceivedMessage, message)
 			require.Equal(t, tt.wantCommand, command)

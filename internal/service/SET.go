@@ -1,9 +1,9 @@
-package Commands
+package service
 
 import (
-	"net"
+	"bytes"
 	"rediska/internal/Storage"
-	"rediska/internal/domain/response"
+	"rediska/internal/util/resper"
 	"time"
 )
 
@@ -22,7 +22,9 @@ type SetArgs struct {
 	ttl   time.Duration
 }
 
-func SET(conn net.Conn, key string, value string, opts ...SetOptionFunc) {
+func (s *CommandsService) SET(key string, value string, opts ...SetOptionFunc) (bytes.Buffer, error) {
+	log := s.log.With("op", "Service.SET")
+
 	args := &SetArgs{
 		key:   key,
 		value: value,
@@ -33,7 +35,13 @@ func SET(conn net.Conn, key string, value string, opts ...SetOptionFunc) {
 	}
 
 	storage := Storage.GetInstance()
+	// we do not handle error because setting to map is trivial...
 	storage.Set(args.key, args.value)
 
-	response.OK(conn)
+	buf, err := resper.EncodeSimpleString("OK")
+	if err != nil {
+		log.Error("failed to encode: ", err)
+		return bytes.Buffer{}, err
+	}
+	return buf, nil
 }
