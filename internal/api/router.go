@@ -1,6 +1,6 @@
 package api
 
-type HandlerFunc func(args []any) error
+type HandlerFunc func(args []any)
 
 type MiddlewareFunc func(next HandlerFunc) HandlerFunc
 

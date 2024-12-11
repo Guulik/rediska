@@ -1,31 +1,32 @@
 package api
 
 import (
-	"rediska/internal/Commands"
+	"bytes"
+	"rediska/internal/domain/response"
+	"rediska/internal/lib/logger/sl"
+	"rediska/internal/service"
 	"strings"
 	"time"
 )
 
-func (a *API) PING(args []any) error {
-	a.log.Debug("ponging...")
-	//err := Commands.PING(a.conn)
-	//TODO: return error from service when it will be implemented
-	Commands.PING(a.conn)
-
-	return nil
+func (a *API) PING(args []any) {
+	log := a.log.With("op", "api.PING")
+	log.Debug("ponging...")
+	buf, err := a.checker.PING()
+	a.sendResponse(buf, err)
 }
-func (a *API) ECHO(args []any) error {
-	a.log.Debug("echoing...")
+func (a *API) ECHO(args []any) {
+	log := a.log.With("op", "Api.Echo")
+
+	log.Debug("echoing...")
 	phrase := args[0].(string)
-	Commands.ECHO(a.conn, phrase)
-
-	//err := Commands.ECHO(a.conn)
-	//TODO: return error from service  when it will be implemented
-
-	return nil
+	buf, err := a.checker.ECHO(phrase)
+	a.sendResponse(buf, err)
 }
-func (a *API) SET(args []any) error {
-	a.log.Debug("setting...")
+func (a *API) SET(args []any) {
+	log := a.log.With("op", "api.SET")
+
+	log.Debug("setting...")
 	key := args[0].(string)
 	value := args[1].(string)
 	ttlType := args[2].(string)
@@ -33,36 +34,43 @@ func (a *API) SET(args []any) error {
 
 	var (
 		ttl time.Duration
+		buf bytes.Buffer
 		err error
 	)
 	if strings.EqualFold(ttlType, "px") {
 		ttl, err = time.ParseDuration(expire + "ms")
 		if err != nil {
-			a.log.Error("failed to parse duration")
-			return err
+			log.Error("failed to parse duration", sl.Err(err))
+			a.sendResponse(bytes.Buffer{}, err)
+			return
 		}
-		Commands.SET(a.conn, key, value, Commands.WithTTL(ttl))
-		//err = Commands.SET(a.conn, key, value, Commands.WithTTL(ttl))
+		buf, err = a.storageModifier.SET(key, value, service.WithTTL(ttl))
+		a.sendResponse(buf, err)
+		return
 	}
-	Commands.SET(a.conn, key, value)
-	//err = Commands.SET(a.conn, key, value)
-	//TODO: return error from service  when it will be implemented
-	return nil
+	buf, err = a.storageModifier.SET(key, value)
+	a.sendResponse(buf, err)
+	return
 }
 
-func (a *API) GET(args []any) error {
-	a.log.Debug("getting...")
+func (a *API) GET(args []any) {
+	log := a.log.With("op", "api.GET")
+	log.Debug("getting...")
+
 	key := args[0].(string)
-	Commands.GET(a.conn, key)
-
-	//err := Commands.GET(a.conn, key)
-	//TODO: return error from service when it will be implemented
-
-	return nil
+	buf, err := a.valuesProvider.GET(key)
+	a.sendResponse(buf, err)
 }
-func (a *API) RegisterCommands() {
-	a.router.AddRoute("PING", a.PING)
-	a.router.AddRoute("ECHO", a.ECHO)
-	a.router.AddRoute("SET", a.SET)
-	a.router.AddRoute("GET", a.GET)
+
+func (a *API) sendResponse(buf bytes.Buffer, err error) {
+	log := a.log.With("op", "api.sendResponse")
+
+	if err != nil {
+		log.Debug("sending Error")
+		buf = response.CreateError(err)
+	}
+	_, err = a.conn.Write(buf.Bytes())
+	if err != nil {
+		log.Error("failed to write response to client")
+	}
 }

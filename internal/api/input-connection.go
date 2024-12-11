@@ -7,24 +7,8 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"rediska/internal/domain/response"
+	"rediska/internal/util/resper"
 )
-
-type API struct {
-	log    *slog.Logger
-	conn   net.Conn
-	router *Router
-}
-
-func New(
-	log *slog.Logger,
-) *API {
-	return &API{log: log, router: NewRouter()}
-}
-
-func (a *API) setConn(conn net.Conn) {
-	a.conn = conn
-}
 
 func (a *API) HandleInput(conn net.Conn) {
 	const op = "api.HandleInput"
@@ -34,7 +18,7 @@ func (a *API) HandleInput(conn net.Conn) {
 	for {
 		v, err := a.readInput()
 		log.Debug("resp value and err",
-			slog.Any("value", a.convertRespValuesToAnyArray(v.Array())),
+			slog.Any("value", resper.RespValuesToAny(v.Array())),
 			slog.Any("error", err))
 
 		if err != nil {
@@ -45,17 +29,14 @@ func (a *API) HandleInput(conn net.Conn) {
 
 		command := v.Array()[0].String()
 		fmt.Println("command: ", command)
-		args := a.convertRespValuesToAnyArray(v.Array()[1:])
+		args := resper.RespValuesToAny(v.Array()[1:])
 
 		handler, ok := a.router.routes[command]
 		if !ok {
-			fmt.Printf("Unknown command: %s\n", command)
+			fmt.Printf("Unknown command: %service\n", command)
 			return
 		}
-		err = handler(args)
-		if err != nil {
-			response.Error(a.conn, err)
-		}
+		handler(args)
 	}
 }
 
@@ -88,28 +69,7 @@ func (a *API) readInput() (resp.Value, error) {
 
 	log.Debug("buffer and RESP value debug",
 		slog.Any("received bytes:", buf[:n]),
-		slog.Any("readerValue: ", a.convertRespValuesToAnyArray(v.Array())))
+		slog.Any("readerValue: ", resper.RespValuesToAny(v.Array())))
 
 	return v, nil
-}
-
-func (a *API) convertRespValuesToAnyArray(values []resp.Value) []any {
-	var result []any
-	for _, v := range values {
-		switch v.Type() {
-		case resp.BulkString:
-			result = append(result, v.String())
-		case resp.SimpleString:
-			result = append(result, v.String())
-		case resp.Integer:
-			result = append(result, v.Integer())
-		case resp.Error:
-			result = append(result, v.Error())
-		case resp.Array:
-			result = append(result, v.Array())
-		default:
-			result = append(result, nil)
-		}
-	}
-	return result
 }
