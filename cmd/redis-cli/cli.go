@@ -32,18 +32,11 @@ func interactiveMode() {
 	for {
 		fmt.Print("> ")
 		scanner.Scan()
-		input := scanner.Text()
 
-		if input == "exit" {
-			os.Exit(0)
-		}
-
-		args := strings.Fields(input)
-		if len(args) == 0 {
-			fmt.Println("empty command")
+		args, err := extractArgs(scanner.Text())
+		if err != nil {
 			continue
 		}
-		fmt.Println("!!DEBUG!! args: ", args)
 		strings.ToUpper(args[0])
 
 		cmd, _, err := cli.RootCmd.Find(args)
@@ -54,4 +47,19 @@ func interactiveMode() {
 		cli.RootCmd.SetArgs(args)
 		cmd.Execute()
 	}
+}
+
+func extractArgs(input string) ([]string, error) {
+	if input == "exit" {
+		os.Exit(0)
+	}
+
+	args := strings.Fields(input)
+	if len(args) == 0 {
+		fmt.Println("empty command")
+		return nil, fmt.Errorf("empty command")
+	}
+	fmt.Println("!!DEBUG!! args: ", args)
+
+	return args, nil
 }

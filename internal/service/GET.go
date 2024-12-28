@@ -2,9 +2,12 @@ package service
 
 import (
 	"bytes"
+	"errors"
 	"rediska/internal/lib/logger/sl"
 	"rediska/internal/util/resper"
 )
+
+var ErrorNotFound = errors.New("value by provided key is not found")
 
 func (s *CommandsService) GET(key string) (bytes.Buffer, error) {
 	log := s.log.With("op", "Service.GET")
@@ -13,13 +16,16 @@ func (s *CommandsService) GET(key string) (bytes.Buffer, error) {
 		buf bytes.Buffer
 		err error
 	)
-	if value, exists := s.storage.Get(key); exists {
-
-		buf, err = resper.EncodeBulkString(value)
-		if err != nil {
-			log.Error("failed to encode:", sl.Err(err))
-			return bytes.Buffer{}, err
-		}
+	value, exists := s.storage.Get(key)
+	if !exists {
+		return bytes.Buffer{}, ErrorNotFound
 	}
+
+	buf, err = resper.EncodeBulkString(value)
+	if err != nil {
+		log.Error("failed to encode:", sl.Err(err))
+		return bytes.Buffer{}, err
+	}
+
 	return buf, nil
 }
