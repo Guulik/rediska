@@ -16,7 +16,7 @@ func (s *CommandsService) GET(key string) (bytes.Buffer, error) {
 		buf bytes.Buffer
 		err error
 	)
-	value, exists := s.storage.Get(key)
+	value, exists := s.provider.Get(key)
 	if !exists {
 		return bytes.Buffer{}, ErrorNotFound
 	}

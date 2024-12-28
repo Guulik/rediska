@@ -3,21 +3,26 @@ package service
 import "log/slog"
 
 type CommandsService struct {
-	log     *slog.Logger
-	storage RedisStorage
+	log      *slog.Logger
+	provider Provider
+	saver    Saver
 }
 
-type RedisStorage interface {
+type Provider interface {
 	Get(key string) (string, bool)
+}
+type Saver interface {
 	Set(key string, value string)
 }
 
 func New(
 	log *slog.Logger,
-	storage RedisStorage,
+	provider Provider,
+	saver Saver,
 ) *CommandsService {
 	return &CommandsService{
-		log:     log,
-		storage: storage,
+		log:      log,
+		provider: provider,
+		saver:    saver,
 	}
 }

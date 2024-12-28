@@ -35,7 +35,7 @@ func (s *CommandsService) SET(key string, value string, opts ...SetOptionFunc) (
 	}
 
 	// we do not handle error because setting to map is trivial...
-	s.storage.Set(args.key, args.value)
+	s.saver.Set(args.key, args.value)
 
 	buf, err := resper.EncodeSimpleString("OK")
 	if err != nil {

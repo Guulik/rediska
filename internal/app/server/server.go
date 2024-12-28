@@ -26,7 +26,7 @@ func New(
 	_ = context.Background()
 
 	repo := storage.New()
-	serv := service.New(log, repo)
+	serv := service.New(log, repo, repo)
 	API := api.New(log, serv, serv, serv)
 	API.RegisterCommands()
 
