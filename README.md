@@ -2,7 +2,7 @@
 
 *This repository does not claim to be an alternative or replacement for Redis.*
 
-This is my implementation of Redis and redis-cli.
+This is my implementation of in-memory storage and cli client.
 It's just my learning project, where I try to learn more about Redis and apply best development practices.
 
 # WIP
