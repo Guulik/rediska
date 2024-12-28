@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (c *CliClient) TrySendCommandWithRetries(command string, args ...string) (string, error) {
+func (c *CliClient) TrySendRequestWithRetries(command string, args ...string) (string, error) {
 	retries := 3
 	waitInterval := time.Second
 	increaseInterval := func(t time.Duration) time.Duration {
@@ -21,7 +21,7 @@ func (c *CliClient) TrySendCommandWithRetries(command string, args ...string) (s
 	)
 
 	ctx := context.Background()
-	response, err = c.trySendCommand(ctx, command, args...)
+	response, err = c.trySendRequest(ctx, command, args...)
 	if err == nil {
 		return response, nil
 	}
@@ -33,7 +33,7 @@ func (c *CliClient) TrySendCommandWithRetries(command string, args ...string) (s
 
 	for range retries {
 		fmt.Println("retrying")
-		response, err = c.trySendCommand(ctx, command, args...)
+		response, err = c.trySendRequest(ctx, command, args...)
 		if err == nil {
 			return response, nil
 		}
@@ -44,7 +44,7 @@ func (c *CliClient) TrySendCommandWithRetries(command string, args ...string) (s
 	return "", err
 }
 
-func (c *CliClient) trySendCommand(ctx context.Context, command string, args ...string) (string, error) {
+func (c *CliClient) trySendRequest(ctx context.Context, command string, args ...string) (string, error) {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, time.Second)
 	defer cancel()
@@ -55,7 +55,7 @@ func (c *CliClient) trySendCommand(ctx context.Context, command string, args ...
 	}, 1)
 
 	go func() {
-		res, err := c.sendCommand(command, args...)
+		res, err := c.sendRequest(command, args...)
 		resultCh <- struct {
 			response string
 			err      error
@@ -74,7 +74,7 @@ func (c *CliClient) trySendCommand(ctx context.Context, command string, args ...
 	}
 }
 
-func (c *CliClient) sendCommand(command string, args ...string) (string, error) {
+func (c *CliClient) sendRequest(command string, args ...string) (string, error) {
 	values := []resp.Value{resp.StringValue(command)}
 	for _, arg := range args {
 		values = append(values, resp.StringValue(arg))

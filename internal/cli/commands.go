@@ -14,7 +14,7 @@ var pingCmd = &cobra.Command{
 	Use:   "PING",
 	Short: "check server availability",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response, err := cli.TrySendCommandWithRetries("PING")
+		response, err := cli.TrySendRequestWithRetries("PING")
 		if err != nil {
 			return err
 		}
@@ -28,7 +28,7 @@ var getCmd = &cobra.Command{
 	Use:   "GET key",
 	Short: "Get value by provided key",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response, err := cli.TrySendCommandWithRetries("GET", args...)
+		response, err := cli.TrySendRequestWithRetries("GET", args...)
 		if err != nil {
 			return err
 		}
