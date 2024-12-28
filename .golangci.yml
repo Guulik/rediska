@@ -12,7 +12,6 @@ linters:
     - ineffassign
     - interfacebloat
     - nakedret
-  disable:
     - funlen
     - godox
     - nestif

@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"net"
 	"rediska/config"
-	"rediska/internal/Storage"
 	"rediska/internal/api"
 	"rediska/internal/service"
+	"rediska/internal/storage"
 )
 
 type Server struct {
@@ -25,8 +25,8 @@ func New(
 	//TODO: use context
 	_ = context.Background()
 
-	//TODO: init repo layer
-	serv := service.New(log)
+	repo := storage.New()
+	serv := service.New(log, repo)
 	API := api.New(log, serv, serv, serv)
 	API.RegisterCommands()
 
@@ -47,8 +47,6 @@ func (s *Server) run() error {
 	if err != nil {
 		return err
 	}
-
-	Storage.Init()
 
 	for {
 		conn, err := l.Accept()

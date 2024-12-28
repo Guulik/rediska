@@ -2,7 +2,6 @@ package service
 
 import (
 	"bytes"
-	"rediska/internal/Storage"
 	"rediska/internal/lib/logger/sl"
 	"rediska/internal/util/resper"
 	"time"
@@ -35,9 +34,8 @@ func (s *CommandsService) SET(key string, value string, opts ...SetOptionFunc) (
 		opt(args)
 	}
 
-	storage := Storage.GetInstance()
 	// we do not handle error because setting to map is trivial...
-	storage.Set(args.key, args.value)
+	s.storage.Set(args.key, args.value)
 
 	buf, err := resper.EncodeSimpleString("OK")
 	if err != nil {
