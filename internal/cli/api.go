@@ -32,13 +32,13 @@ func (c *CliClient) TrySendRequestWithRetries(command string, args ...string) (s
 	}
 
 	for range retries {
+		time.Sleep(waitInterval)
+		waitInterval = increaseInterval(waitInterval)
 		fmt.Println("retrying")
 		response, err = c.trySendRequest(ctx, command, args...)
 		if err == nil {
 			return response, nil
 		}
-		time.Sleep(waitInterval)
-		waitInterval = increaseInterval(waitInterval)
 	}
 	//returns deadline exceeded
 	return "", err
