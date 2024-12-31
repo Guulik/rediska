@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (c *CliClient) TrySendRequestWithRetries(command string, args ...string) (string, error) {
+func (c *CliClient) CallServerWithRetries(command string, args ...string) (string, error) {
 	retries := 3
 	waitInterval := time.Second
 	increaseInterval := func(t time.Duration) time.Duration {
@@ -21,7 +21,7 @@ func (c *CliClient) TrySendRequestWithRetries(command string, args ...string) (s
 	)
 
 	ctx := context.Background()
-	response, err = c.trySendRequest(ctx, command, args...)
+	response, err = c.tryCallServer(ctx, command, args...)
 	if err == nil {
 		return response, nil
 	}
@@ -35,7 +35,7 @@ func (c *CliClient) TrySendRequestWithRetries(command string, args ...string) (s
 		time.Sleep(waitInterval)
 		waitInterval = increaseInterval(waitInterval)
 		fmt.Println("retrying")
-		response, err = c.trySendRequest(ctx, command, args...)
+		response, err = c.tryCallServer(ctx, command, args...)
 		if err == nil {
 			return response, nil
 		}
@@ -44,8 +44,12 @@ func (c *CliClient) TrySendRequestWithRetries(command string, args ...string) (s
 	return "", err
 }
 
-func (c *CliClient) trySendRequest(ctx context.Context, command string, args ...string) (string, error) {
-	var cancel context.CancelFunc
+func (c *CliClient) tryCallServer(ctx context.Context, command string, args ...string) (string, error) {
+	var (
+		cancel context.CancelFunc
+		err    error
+		res    string
+	)
 	ctx, cancel = context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
@@ -55,7 +59,7 @@ func (c *CliClient) trySendRequest(ctx context.Context, command string, args ...
 	}, 1)
 
 	go func() {
-		res, err := c.sendRequest(command, args...)
+		res, err = c.callServerCommand(command, args...)
 		resultCh <- struct {
 			response string
 			err      error
@@ -64,17 +68,34 @@ func (c *CliClient) trySendRequest(ctx context.Context, command string, args ...
 	}()
 
 	select {
-	case res := <-resultCh:
-		if res.err != nil {
-			return "", res.err
+	case result := <-resultCh:
+		if result.err != nil {
+			return "", result.err
 		}
-		return res.response, nil
+		return result.response, nil
 	case <-ctx.Done():
 		return "", ctx.Err()
 	}
 }
 
-func (c *CliClient) sendRequest(command string, args ...string) (string, error) {
+func (c *CliClient) callServerCommand(command string, args ...string) (string, error) {
+	var (
+		err      error
+		response string
+	)
+	err = c.sendRequest(command, args...)
+	if err != nil {
+		return "", nil
+	}
+	response, err = c.readResponse()
+	if err != nil {
+		return "", nil
+	}
+
+	return response, err
+}
+
+func (c *CliClient) sendRequest(command string, args ...string) error {
 	values := []resp.Value{resp.StringValue(command)}
 	for _, arg := range args {
 		values = append(values, resp.StringValue(arg))
@@ -88,19 +109,21 @@ func (c *CliClient) sendRequest(command string, args ...string) (string, error) 
 	req, err := resp.ArrayValue(values).MarshalRESP()
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to Marshal RESP request: "), err)
-		return "", err
+		return err
 	}
 
 	_, err = c.conn.Write(req)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to send data to server: "), err)
-		return "", err
+		return err
 	}
+	return nil
+}
 
-	//TODO: обернуть в отдельную функцию и распарсить RESP
+func (c *CliClient) readResponse() (string, error) {
 	var n int
 	buf := make([]byte, 4096)
-	n, err = c.conn.Read(buf)
+	n, err := c.conn.Read(buf)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to read response from server: "), err)
 		return "", err

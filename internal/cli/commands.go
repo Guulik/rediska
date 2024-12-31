@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -13,28 +12,24 @@ var RootCmd = &cobra.Command{
 var pingCmd = &cobra.Command{
 	Use:   "PING",
 	Short: "check server availability",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		response, err := cli.TrySendRequestWithRetries("PING")
+	Run: func(cmd *cobra.Command, args []string) {
+		response, err := cli.CallServerWithRetries("PING")
 		if err != nil {
-			return err
+			ShowError(err)
 		}
-
-		fmt.Println("Response:", response)
-		return nil
+		Display(response)
 	},
 }
 
 var getCmd = &cobra.Command{
 	Use:   "GET key",
 	Short: "Get value by provided key",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		response, err := cli.TrySendRequestWithRetries("GET", args...)
+	Run: func(cmd *cobra.Command, args []string) {
+		response, err := cli.CallServerWithRetries("GET", args...)
 		if err != nil {
-			return err
+			ShowError(err)
 		}
-
-		fmt.Println("Response:", response)
-		return nil
+		Display(response)
 	},
 }
 
